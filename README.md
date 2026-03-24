@@ -24,16 +24,16 @@ A modular DESeq2 pipeline for RNA-seq differential expression analysis with comm
 
 ## Repository structure
 
-- `deseq2_generic.R` — main entrypoint (orchestrates the full workflow).
-- `R/utils_cli.R` — CLI parsing, argument helpers, and basic validations.
-- `R/io.R` — sample table and GTF loading/validation.
-- `R/analysis.R` — DESeq2 model construction, contrasts, result assembly, significant gene extraction.
-- `R/plots.R` — PCA and volcano plotting.
-- `R/clustering.R` — significant-gene heatmap and time-course clustering.
-- `templates/run_deseq2_generic.sh` — executable command template.
-- `templates/skill_input.schema.json` — skill input contract schema.
-- `templates/skill_output.schema.json` — skill output contract schema.
-- `skills/deseq2-generic-analysis/` — reusable Codex skill definition.
+- `scripts/deseq2_generic.R` — main entrypoint (orchestrates the full workflow).
+- `scripts/R/utils_cli.R` — CLI parsing, argument helpers, and basic validations.
+- `scripts/R/io.R` — sample table and GTF loading/validation.
+- `scripts/R/analysis.R` — DESeq2 model construction, contrasts, result assembly, significant gene extraction.
+- `scripts/R/plots.R` — PCA and volcano plotting.
+- `scripts/R/clustering.R` — significant-gene heatmap and time-course clustering.
+- `scripts/run_deseq2_generic.sh` — executable command template.
+- `references/skill_input.schema.json` — skill input contract schema.
+- `references/skill_output.schema.json` — skill output contract schema.
+- `SKILL.md` + `agents/openai.yaml` — OpenClaw/Codex skill metadata.
 
 ---
 
@@ -63,7 +63,7 @@ A modular DESeq2 pipeline for RNA-seq differential expression analysis with comm
 ## Main CLI usage
 
 ```bash
-Rscript deseq2_generic.R \
+Rscript scripts/deseq2_generic.R \
   --count_dir=counts \
   --sample_table=sample_table.csv \
   --gtf=annotation.gtf \
@@ -74,13 +74,13 @@ Rscript deseq2_generic.R \
 Show help:
 
 ```bash
-Rscript deseq2_generic.R --help
+Rscript scripts/deseq2_generic.R --help
 ```
 
 Use template (edit paths first):
 
 ```bash
-bash templates/run_deseq2_generic.sh
+bash scripts/run_deseq2_generic.sh
 ```
 
 ---
@@ -90,7 +90,7 @@ bash templates/run_deseq2_generic.sh
 ### Step 1 — Base run (PCA + pairwise DE, no volcano/heatmap)
 
 ```bash
-Rscript deseq2_generic.R \
+Rscript scripts/deseq2_generic.R \
   --count_dir=counts \
   --sample_table=sample_table.csv \
   --gtf=annotation.gtf \
@@ -104,7 +104,7 @@ Rscript deseq2_generic.R \
 ### Step 2 — Enable volcano and significant-gene heatmap
 
 ```bash
-Rscript deseq2_generic.R \
+Rscript scripts/deseq2_generic.R \
   --count_dir=counts \
   --sample_table=sample_table.csv \
   --gtf=annotation.gtf \
@@ -120,7 +120,7 @@ Rscript deseq2_generic.R \
 ### Step 3 — Add custom contrasts (optional)
 
 ```bash
-Rscript deseq2_generic.R \
+Rscript scripts/deseq2_generic.R \
   --count_dir=counts \
   --sample_table=sample_table.csv \
   --gtf=annotation.gtf \
@@ -135,7 +135,7 @@ Rscript deseq2_generic.R \
 ### Step 4 — Multi-group / time-course clustering (group count > 2)
 
 ```bash
-Rscript deseq2_generic.R \
+Rscript scripts/deseq2_generic.R \
   --count_dir=counts \
   --sample_table=sample_table.csv \
   --gtf=annotation.gtf \
@@ -185,10 +185,10 @@ PCA output includes explicit variance metadata:
 
 ## Skill integration notes
 
-For workflow automation or agent orchestration, use:
+For OpenClaw/agent workflow automation, use:
 
-- `templates/skill_input.schema.json` for input validation.
-- `templates/skill_output.schema.json` for output-port consistency.
+- `references/skill_input.schema.json` for input validation.
+- `references/skill_output.schema.json` for output-port consistency.
 
 This enables stable contracts between execution and downstream skill steps.
 
