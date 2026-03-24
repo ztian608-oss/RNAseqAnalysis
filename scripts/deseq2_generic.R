@@ -25,7 +25,11 @@ for (mf in module_files) {
   }
   source(full_path)
 }
+<<<<<<< HEAD
 timecourse_script <- file.path(script_dir, "R", "run_timecourse_cluster.R")
+=======
+timecourse_script <- file.path(script_dir, "run_timecourse_cluster.R")
+>>>>>>> main
 if (!file.exists(timecourse_script)) {
   stop("Time-course clustering script not found: ", timecourse_script)
 }
