@@ -25,6 +25,11 @@ for (mf in module_files) {
   }
   source(full_path)
 }
+timecourse_script <- file.path(script_dir, "run_timecourse_cluster.R")
+if (!file.exists(timecourse_script)) {
+  stop("Time-course clustering script not found: ", timecourse_script)
+}
+source(timecourse_script)
 
 main <- function() {
   args <- parse_args(commandArgs(trailingOnly = TRUE))
@@ -113,7 +118,7 @@ main <- function() {
   }
 
   if (length(group_levels) > 2) {
-    run_timecourse_cluster(vsd_mat, sample_table, sig_de_genes, cluster_num, outdir, seed = seed)
+    run_timecourse_cluster(vsd_mat, sample_table, sig_de_genes, ref_group, cluster_num, outdir, seed = seed)
   } else {
     message("Group number <= 2; skip time-course clustering.")
   }
