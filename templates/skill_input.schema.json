@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "DESeq2GenericInput",
+  "type": "object",
+  "required": ["count_dir", "sample_table", "gtf", "ref_group", "outdir"],
+  "properties": {
+    "count_dir": { "type": "string", "description": "Directory containing HTSeq count files" },
+    "sample_table": { "type": "string", "description": "CSV path with sampleName,sampleFile,group_name" },
+    "gtf": { "type": "string", "description": "GTF/GFF annotation file" },
+    "ref_group": { "type": "string", "description": "Reference group name" },
+    "outdir": { "type": "string", "description": "Output directory" },
+    "design": { "type": "string", "default": "~ group_name" },
+    "contrast_file": { "type": "string" },
+    "comparison_mode": {
+      "type": "string",
+      "enum": ["pairwise", "custom", "both"],
+      "default": "both"
+    },
+    "padj_cutoff": { "type": "number", "default": 0.01 },
+    "log2_cutoff": { "type": "number", "default": 1.0 },
+    "min_count_mean": { "type": "number", "default": 10 },
+    "cluster_num": { "type": "integer", "default": 6 },
+    "seed": { "type": "integer", "default": 12345 },
+    "run_volcano": { "type": "boolean", "default": true },
+    "run_heatmap": { "type": "boolean", "default": true }
+  },
+  "additionalProperties": false
+}
