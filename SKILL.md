@@ -14,10 +14,12 @@ Run the repository pipeline with correct inputs, robust parameter choices, and s
    - sample table (`sampleName`, `sampleFile`, `group_name`),
    - GTF/GFF,
    - reference group.
+   - Ensure `sampleName` values are unique. For biological/technical replicates, append suffixes such as `_rep1`, `_rep2`, etc., to distinguish replicate samples.
 2. Choose comparison mode:
    - `pairwise`: compare each non-reference group vs reference,
    - `custom`: only contrast file comparisons,
    - `both`: pairwise + custom.
+   - Default to time-course analysis when the sample table contains more than 2 groups.
 3. Run `scripts/deseq2_generic.R` with selected options.
 4. Summarize key outputs for downstream steps.
 5. When requested, emit interface-aligned JSON using schema templates in `references/`.
