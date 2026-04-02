@@ -176,7 +176,7 @@ if (sys.nframe() == 0) {
   args <- commandArgs(trailingOnly = TRUE)
   usage <- paste(
     "Usage:",
-    "Rscript scripts/R/run_timecourse_cluster.R",
+    "Rscript scripts/R/legacy_tcseq_timecourse_cli.R",
     "--vsd_csv <vsd.csv>",
     "--sample_table <sample_table.csv>",
     "--sig_genes <significant_de_genes.txt>",

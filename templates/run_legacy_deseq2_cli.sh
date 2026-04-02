@@ -4,12 +4,12 @@ set -euo pipefail
 # ===== Example command template for DESeq2 generic pipeline =====
 # Copy this file and replace paths/groups for your project.
 
-Rscript deseq2_generic.R \
+Rscript legacy_deseq2_cli.R \
   --count_dir=/path/to/htseq_counts \
   --sample_table=/path/to/sample_table.csv \
   --gtf=/path/to/annotation.gtf \
   --ref_group=control \
-  --outdir=/path/to/output/DESeq2_result \
+  --outdir=/path/to/output/RNAseqAnalysis_output \
   --design='~ group_name' \
   --comparison_mode=pairwise \
   --padj_cutoff=0.01 \

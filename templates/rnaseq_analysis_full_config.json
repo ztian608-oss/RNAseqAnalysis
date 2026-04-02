@@ -1,0 +1,58 @@
+{
+  "study": {
+    "objective": "Identify biologically meaningful differential expression changes and pathway shifts.",
+    "disease_context": [],
+    "focus_pathways": [],
+    "focus_markers": [],
+    "focus_groups": [],
+    "emphasis": "balanced",
+    "need_trend_analysis": false
+  },
+  "input": {
+    "counts_source": "matrix",
+    "count_matrix": "counts.csv",
+    "metadata": "metadata.csv",
+    "annotation": "annotation.csv",
+    "contrast_file": "",
+    "background_genes": "",
+    "organism": "human",
+    "id_type": "SYMBOL"
+  },
+  "design": {
+    "formula": "~ group_name",
+    "group_column": "group_name",
+    "sample_column": "sampleName",
+    "reference_group": "control",
+    "comparison_mode": "pairwise",
+    "run_lrt": false,
+    "lrt_reduced": ""
+  },
+  "thresholds": {
+    "padj": [0.01, 0.05],
+    "log2fc": [0.58, 1.0],
+    "min_count_mean": [5, 10],
+    "independent_filtering": [true, false],
+    "cooks_cutoff": ["default", "off"]
+  },
+  "shrinkage": {
+    "enabled": true,
+    "type": ["apeglm"]
+  },
+  "trend": {
+    "enabled": "auto",
+    "trigger_group_count_gt": 3,
+    "cluster_num": [4, 6],
+    "seed": 12345
+  },
+  "enrichment": {
+    "enabled": true,
+    "mode": ["ORA"],
+    "databases": ["GO_BP", "KEGG"],
+    "universe": "expressed_genes",
+    "custom_term2gene": ""
+  },
+  "output": {
+    "outdir": "RNAseqAnalysis_output",
+    "report_name": "RNAseqAnalysis_report.md"
+  }
+}

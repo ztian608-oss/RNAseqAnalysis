@@ -6,12 +6,12 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-Rscript "${SCRIPT_DIR}/deseq2_generic.R" \
+Rscript "${SCRIPT_DIR}/legacy_deseq2_cli.R" \
   --count_dir=/path/to/htseq_counts \
   --sample_table=/path/to/sample_table.csv \
   --gtf=/path/to/annotation.gtf \
   --ref_group=control \
-  --outdir=/path/to/output/DESeq2_result \
+  --outdir=/path/to/output/RNAseqAnalysis_output \
   --design='~ group_name' \
   --comparison_mode=pairwise \
   --padj_cutoff=0.01 \

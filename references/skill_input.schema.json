@@ -1,28 +1,136 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "title": "DESeq2GenericInput",
+  "title": "RNAseqAnalysisInput",
   "type": "object",
-  "required": ["count_dir", "sample_table", "gtf", "ref_group", "outdir"],
+  "required": ["study", "input", "output"],
   "properties": {
-    "count_dir": { "type": "string", "description": "Directory containing HTSeq count files" },
-    "sample_table": { "type": "string", "description": "CSV path with sampleName,sampleFile,group_name" },
-    "gtf": { "type": "string", "description": "GTF/GFF annotation file" },
-    "ref_group": { "type": "string", "description": "Reference group name" },
-    "outdir": { "type": "string", "description": "Output directory" },
-    "design": { "type": "string", "default": "~ group_name" },
-    "contrast_file": { "type": "string" },
-    "comparison_mode": {
-      "type": "string",
-      "enum": ["pairwise", "custom", "both"],
-      "default": "both"
+    "study": {
+      "type": "object",
+      "required": ["objective"],
+      "properties": {
+        "objective": { "type": "string" },
+        "disease_context": { "type": "array", "items": { "type": "string" } },
+        "focus_pathways": { "type": "array", "items": { "type": "string" } },
+        "focus_markers": { "type": "array", "items": { "type": "string" } },
+        "focus_groups": { "type": "array", "items": { "type": "string" } },
+        "emphasis": {
+          "type": "string",
+          "enum": ["strict_stats", "balanced", "biological_interpretation"],
+          "default": "balanced"
+        },
+        "need_trend_analysis": { "type": "boolean", "default": false }
+      },
+      "additionalProperties": false
     },
-    "padj_cutoff": { "type": "number", "default": 0.01 },
-    "log2_cutoff": { "type": "number", "default": 1.0 },
-    "min_count_mean": { "type": "number", "default": 10 },
-    "cluster_num": { "type": "integer", "default": 6 },
-    "seed": { "type": "integer", "default": 12345 },
-    "run_volcano": { "type": "boolean", "default": true },
-    "run_heatmap": { "type": "boolean", "default": true }
+    "input": {
+      "type": "object",
+      "required": ["counts_source", "metadata"],
+      "properties": {
+        "counts_source": {
+          "type": "string",
+          "enum": ["matrix", "htseq_dir"]
+        },
+        "count_matrix": { "type": "string" },
+        "count_dir": { "type": "string" },
+        "metadata": { "type": "string" },
+        "annotation": { "type": "string" },
+        "contrast_file": { "type": "string" },
+        "background_genes": { "type": "string" },
+        "organism": { "type": "string", "default": "human" },
+        "id_type": { "type": "string", "default": "SYMBOL" }
+      },
+      "additionalProperties": false
+    },
+    "design": {
+      "type": "object",
+      "properties": {
+        "formula": { "type": "string", "default": "~ group_name" },
+        "group_column": { "type": "string", "default": "group_name" },
+        "sample_column": { "type": "string", "default": "sampleName" },
+        "reference_group": { "type": "string" },
+        "comparison_mode": {
+          "type": "string",
+          "enum": ["pairwise", "custom", "both"],
+          "default": "pairwise"
+        },
+        "run_lrt": { "type": "boolean", "default": false },
+        "lrt_reduced": { "type": "string" }
+      },
+      "additionalProperties": false
+    },
+    "thresholds": {
+      "type": "object",
+      "properties": {
+        "padj": { "type": "array", "items": { "type": "number", "enum": [0.05, 0.01] }, "default": [0.05] },
+        "log2fc": { "type": "array", "items": { "type": "number", "enum": [1, 1.5, 2] }, "default": [1.0] },
+        "min_count_mean": { "type": "array", "items": { "type": "number" }, "default": [10] },
+        "independent_filtering": { "type": "array", "items": { "type": "boolean" }, "default": [true] },
+        "cooks_cutoff": {
+          "type": "array",
+          "items": { "type": "string", "enum": ["default", "off"] },
+          "default": ["default"]
+        }
+      },
+      "additionalProperties": false
+    },
+    "shrinkage": {
+      "type": "object",
+      "properties": {
+        "enabled": { "type": "boolean", "default": true },
+        "type": {
+          "type": "array",
+          "items": { "type": "string", "enum": ["apeglm", "ashr", "normal"] },
+          "default": ["apeglm"]
+        }
+      },
+      "additionalProperties": false
+    },
+    "trend": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "string",
+          "enum": ["auto", "true", "false"],
+          "default": "auto"
+        },
+        "trigger_group_count_gt": { "type": "integer", "default": 3 },
+        "cluster_num": { "type": "array", "items": { "type": "integer", "enum": [4, 6, 8] }, "default": [4, 6] },
+        "seed": { "type": "integer", "default": 12345 }
+      },
+      "additionalProperties": false
+    },
+    "enrichment": {
+      "type": "object",
+      "properties": {
+        "enabled": { "type": "boolean", "default": true },
+        "mode": {
+          "type": "array",
+          "items": { "type": "string", "enum": ["ORA", "GSEA"] },
+          "default": ["ORA"]
+        },
+        "databases": {
+          "type": "array",
+          "items": { "type": "string", "enum": ["GO_BP", "GO_MF", "GO_CC", "KEGG", "CUSTOM"] },
+          "default": ["GO_BP", "KEGG"]
+        },
+        "universe": {
+          "type": "string",
+          "enum": ["expressed_genes", "all_input_genes", "custom"],
+          "default": "expressed_genes"
+        },
+        "custom_term2gene": { "type": "string" }
+      },
+      "additionalProperties": false
+    },
+    "output": {
+      "type": "object",
+      "required": ["outdir"],
+      "properties": {
+        "outdir": { "type": "string" },
+        "report_name": { "type": "string", "default": "RNAseqAnalysis_report.md" }
+      },
+      "additionalProperties": false
+    }
   },
   "additionalProperties": false
 }

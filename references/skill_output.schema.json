@@ -1,32 +1,46 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "title": "DESeq2GenericOutput",
+  "title": "RNAseqAnalysisOutput",
   "type": "object",
-  "required": ["outdir", "files"],
+  "required": ["outdir", "final_variant", "files"],
   "properties": {
     "outdir": { "type": "string" },
+    "final_variant": { "type": "string" },
+    "group_count": { "type": "integer" },
     "comparisons": {
       "type": "array",
-      "items": { "type": "string" },
-      "description": "Comparison names, e.g. treat_vs_control"
+      "items": { "type": "string" }
     },
-    "significant_gene_count": { "type": "integer", "minimum": 0 },
+    "stability_summary": {
+      "type": "object",
+      "properties": {
+        "variant_count": { "type": "integer" },
+        "selected_reason": { "type": "string" }
+      },
+      "additionalProperties": true
+    },
     "files": {
       "type": "object",
       "properties": {
-        "vsd_csv": { "type": "string" },
+        "report_md": { "type": "string" },
+        "config_json": { "type": "string" },
+        "manifest_json": { "type": "string" },
+        "variant_summary_csv": { "type": "string" },
+        "log_txt": { "type": "string" },
         "pca_pdf": { "type": "string" },
         "pca_data_csv": { "type": "string" },
-        "de_result_list_rds": { "type": "string" },
-        "significant_genes_txt": { "type": "string" },
-        "significant_heatmap_pdf": { "type": "string" },
-        "timecourse_cluster_heatmap_pdf": { "type": "string" },
-        "timecourse_cluster_result_csv": { "type": "string" },
-        "timecourse_cluster_patterns_pdf": { "type": "string" }
+        "vsd_csv": { "type": "string" },
+        "deg_summary_csv": { "type": "string" },
+        "selected_deseq2_dir": { "type": "string" },
+        "selected_figures_dir": { "type": "string" },
+        "selected_tables_dir": { "type": "string" },
+        "selected_comparison_dir": { "type": "string" },
+        "selected_deg_dir": { "type": "string" },
+        "selected_enrichment_dir": { "type": "string" },
+        "selected_tcseq_dir": { "type": "string" }
       },
       "additionalProperties": {
-        "type": "string",
-        "description": "Additional output file path"
+        "type": "string"
       }
     }
   },

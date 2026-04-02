@@ -25,4 +25,4 @@ run_sig_heatmap <- function(vsd_mat, sig_genes, sample_table, outdir) {
   )
 }
 
-# run_timecourse_cluster() moved to scripts/run_timecourse_cluster.R
+# Legacy TCseq helper moved to scripts/R/legacy_tcseq_timecourse_cli.R

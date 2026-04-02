@@ -1,0 +1,88 @@
+{
+  "generic_themes": {
+    "cell_cycle": {
+      "label": "Cell Cycle",
+      "genes": ["Mki67", "Ccna2", "Ccnb1", "Cenpf", "Prc1", "Hjurp", "Kif23", "Diaph3", "Top2a", "Ube2c"]
+    },
+    "inflammation_innate": {
+      "label": "Inflammation Innate",
+      "genes": ["Irf7", "Ifi27", "Ifitm3", "Lbp", "Icam1", "Il6", "Tnfaip2", "Stat1", "Cxcl10"]
+    },
+    "ecm_remodeling": {
+      "label": "ECM Remodeling",
+      "genes": ["Dcn", "Mmp3", "Col1a1", "Col3a1", "Fn1", "Postn", "Timp1", "Spp1", "Pla2g2a"]
+    },
+    "stress_response": {
+      "label": "Stress Response",
+      "genes": ["Nppa", "Nppb", "Ankrd1", "Fos", "Jun", "Atf3", "Ddit3", "Hspa1a", "Hspa1b"]
+    },
+    "metabolism": {
+      "label": "Metabolism",
+      "genes": ["Pdk4", "Aldoc", "Ppargc1a", "Cpt1b", "Acadm", "Slc2a4", "Sdha", "Ucp2"]
+    },
+    "apoptosis_survival": {
+      "label": "Apoptosis Survival",
+      "genes": ["Bcl2", "Bax", "Casp3", "Ddit4", "Pmaip1", "Xiap", "Birc5", "Gadd45a"]
+    }
+  },
+  "context_theme_sets": {
+    "cardiomyocyte": {
+      "contractile": {
+        "label": "Contractile Program",
+        "genes": ["Tnnt2", "Tnni1", "Tnni3", "Actn2", "Myh6", "Myh7", "Myl2", "Myl3", "Myom2", "Tcap"]
+      },
+      "calcium_handling": {
+        "label": "Calcium Handling",
+        "genes": ["Atp2a2", "Ryr2", "Casq2", "Pln", "Srl", "Cacna1c", "Jph2", "Camk2d"]
+      }
+    },
+    "immune_inflammation": {
+      "interferon_response": {
+        "label": "Interferon Response",
+        "genes": ["Irf7", "Stat1", "Ifit1", "Ifit3", "Isg15", "Cxcl10", "Ifi27", "Rsad2"]
+      }
+    },
+    "ecm_remodeling": {
+      "fibrosis_matrix": {
+        "label": "Fibrosis Matrix",
+        "genes": ["Col1a1", "Col3a1", "Fn1", "Postn", "Timp1", "Spp1", "Mmp3", "Dcn"]
+      }
+    },
+    "cancer": {
+      "oncogenic_growth": {
+        "label": "Oncogenic Growth",
+        "genes": ["Mki67", "Top2a", "Ube2c", "Myc", "E2f1", "Ezh2", "Foxm1", "Birc5"]
+      }
+    }
+  },
+  "context_tag_rules": [
+    {
+      "tag": "cardiomyocyte",
+      "patterns": ["cardio", "heart", "myocard", "sarcomere", "calcium", "contract"]
+    },
+    {
+      "tag": "immune_inflammation",
+      "patterns": ["immune", "inflamm", "interferon", "cytokine", "macrophage", "tnf", "il6"]
+    },
+    {
+      "tag": "ecm_remodeling",
+      "patterns": ["ecm", "matrix", "fibro", "collagen", "adhesion"]
+    },
+    {
+      "tag": "cell_cycle",
+      "patterns": ["cell cycle", "prolifer", "mitosis", "ki67", "ccna", "ccnb"]
+    },
+    {
+      "tag": "stress_apoptosis",
+      "patterns": ["apopto", "death", "survival", "stress", "er stress"]
+    },
+    {
+      "tag": "metabolism",
+      "patterns": ["metabo", "mitochond", "oxidative", "glycol"]
+    },
+    {
+      "tag": "cancer",
+      "patterns": ["cancer", "tumou", "tumor", "onc", "metast"]
+    }
+  ]
+}

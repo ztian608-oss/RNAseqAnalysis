@@ -1,4 +1,4 @@
 version: 1
-display_name: DESeq2 Generic Analysis
-short_description: Execute modular DESeq2 RNA-seq workflows reliably.
-default_prompt: Run the DESeq2 generic pipeline with correct options, validate inputs, and summarize outputs for downstream analysis.
+display_name: RNAseqAnalysis
+short_description: Run question-driven RNA-seq DE, TCseq, and enrichment workflows.
+default_prompt: Show the planned analysis steps, ask for missing study background when needed, normalize the request into config, run the modular RNAseqAnalysis workflow, compare parameter variants, and summarize the final report-ready results.

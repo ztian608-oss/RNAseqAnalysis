@@ -27,27 +27,45 @@ plot_deseq2_pca <- function(vsd, output_pdf, output_csv, intgroup = "group_name"
 }
 
 run_volcano <- function(de_result_list, padj_cutoff, log2_cutoff, outdir) {
+  if (!requireNamespace("EnhancedVolcano", quietly = TRUE)) {
+    stop("EnhancedVolcano package is required for volcano plot generation.")
+  }
   for (nm in names(de_result_list)) {
     tbl <- as.data.frame(de_result_list[[nm]])
-    tbl <- tbl[!is.na(tbl$padj) & !is.na(tbl$log2FoldChange), ]
+    tbl <- tbl[!is.na(tbl$pvalue) & !is.na(tbl$log2FoldChange), ]
     if (nrow(tbl) == 0) next
 
+    labels <- ifelse(is.na(tbl$gene_name) | tbl$gene_name == "", tbl$gene_id, tbl$gene_name)
     up_top <- tbl %>% dplyr::filter(log2FoldChange > 0) %>% dplyr::slice_min(padj, n = 5) %>% dplyr::pull(gene_name)
     down_top <- tbl %>% dplyr::filter(log2FoldChange < 0) %>% dplyr::slice_min(padj, n = 5) %>% dplyr::pull(gene_name)
+    tbl$volcano_group <- dplyr::case_when(
+      !is.na(tbl$padj) & tbl$padj <= padj_cutoff & tbl$log2FoldChange >= log2_cutoff ~ "DEG Up",
+      !is.na(tbl$padj) & tbl$padj <= padj_cutoff & tbl$log2FoldChange <= -log2_cutoff ~ "DEG Down",
+      TRUE ~ "Not Significant"
+    )
+    keyvals <- c("DEG Up" = "#b2182b", "DEG Down" = "#2166ac", "Not Significant" = "grey70")[tbl$volcano_group]
+    names(keyvals) <- tbl$volcano_group
 
     p <- EnhancedVolcano::EnhancedVolcano(
       tbl,
-      lab = tbl$gene_name,
-      selectLab = tbl$gene_name[tbl$gene_name %in% c(up_top, down_top)],
+      lab = labels,
+      selectLab = labels[labels %in% c(up_top, down_top)],
       x = "log2FoldChange",
-      y = "padj",
-      subtitle = nm,
-      pCutoff = padj_cutoff,
-      FCcutoff = log2_cutoff,
+      y = "pvalue",
+      title = paste("Volcano plot:", nm),
+      subtitle = paste0("x = log2FoldChange; y = -log10(p value); point classes use padj <= ", padj_cutoff,
+        " and |log2FC| >= ", log2_cutoff),
+      xlab = bquote(~Log[2]~ "fold change"),
+      ylab = bquote(~-Log[10]~ italic(P)),
+      pCutoff = 1,
+      FCcutoff = 0,
       drawConnectors = TRUE,
       widthConnectors = 0.2,
       colConnectors = "gray50",
-      labSize = 3
+      labSize = 3,
+      pointSize = 1.8,
+      colAlpha = 0.9,
+      colCustom = keyvals
     )
 
     ggplot2::ggsave(file.path(outdir, paste0("volcanoplot_", nm, ".pdf")), plot = p, width = 5, height = 5)

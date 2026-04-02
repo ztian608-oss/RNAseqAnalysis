@@ -1,0 +1,13 @@
+{
+  "study": {
+    "objective": "Run differential expression analysis."
+  },
+  "input": {
+    "counts_source": "matrix",
+    "count_matrix": "counts.csv",
+    "metadata": "metadata.csv"
+  },
+  "output": {
+    "outdir": "RNAseqAnalysis_output"
+  }
+}

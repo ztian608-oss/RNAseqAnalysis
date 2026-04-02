@@ -14,10 +14,16 @@ file_arg <- cmd_args[grep('^--file=', cmd_args)]
 if (length(file_arg) > 0) {
   script_path <- normalizePath(sub('^--file=', '', file_arg[[1]]))
 } else {
-  script_path <- normalizePath('deseq2_generic.R', mustWork = FALSE)
+  script_path <- normalizePath('legacy_deseq2_pipeline_root.R', mustWork = FALSE)
 }
 script_dir <- dirname(script_path)
-module_files <- c("utils_cli.R", "io.R", "analysis.R", "plots.R", "clustering.R")
+module_files <- c(
+  "legacy_cli_utils.R",
+  "module_io.R",
+  "legacy_analysis_helpers.R",
+  "legacy_plot_helpers.R",
+  "legacy_clustering_helpers.R"
+)
 for (mf in module_files) {
   full_path <- c(
     file.path(script_dir, "R", mf),
@@ -30,8 +36,8 @@ for (mf in module_files) {
   source(full_path)
 }
 timecourse_script <- c(
-  file.path(script_dir, "R", "run_timecourse_cluster.R"),
-  file.path(script_dir, "scripts", "R", "run_timecourse_cluster.R")
+  file.path(script_dir, "R", "legacy_tcseq_timecourse_cli.R"),
+  file.path(script_dir, "scripts", "R", "legacy_tcseq_timecourse_cli.R")
 )
 timecourse_script <- timecourse_script[file.exists(timecourse_script)][1]
 if (!file.exists(timecourse_script)) {
@@ -67,8 +73,8 @@ main <- function() {
   dir.create(outdir, recursive = TRUE, showWarnings = FALSE)
   set.seed(seed)
 
-  sample_table <- load_sample_table(sample_table_file, count_dir)
-  gene_info <- load_gene_info(gtf_file)
+  sample_table <- load_sample_table_legacy(sample_table_file, count_dir)
+  gene_info <- load_annotation_table(gtf_file)
 
   dds <- build_dds(
     sample_table = sample_table,
