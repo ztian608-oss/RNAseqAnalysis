@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "title": "DESeq2GenericInput",
+  "title": "RNAseqAnalysisLegacyInput",
   "type": "object",
   "required": ["count_dir", "sample_table", "gtf", "ref_group", "outdir"],
   "properties": {

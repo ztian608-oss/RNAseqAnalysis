@@ -30,12 +30,10 @@
         "pca_pdf": { "type": "string" },
         "pca_data_csv": { "type": "string" },
         "vsd_csv": { "type": "string" },
-        "deg_summary_csv": { "type": "string" },
         "selected_deseq2_dir": { "type": "string" },
         "selected_figures_dir": { "type": "string" },
         "selected_tables_dir": { "type": "string" },
         "selected_comparison_dir": { "type": "string" },
-        "selected_deg_dir": { "type": "string" },
         "selected_enrichment_dir": { "type": "string" },
         "selected_tcseq_dir": { "type": "string" }
       },

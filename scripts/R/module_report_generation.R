@@ -46,7 +46,28 @@ extract_top_table <- function(tbl, direction = c("up", "down"), n = 10) {
   )
 }
 
-comparison_interpretation <- function(tbl, comparison_name, focus_markers) {
+comparison_labels <- function(final_bundle, comparison_name) {
+  contrast <- final_bundle$contrast_defs[[comparison_name]]
+  if (is.null(contrast) || length(contrast) < 3) {
+    return(list(treatment = comparison_name, reference = "reference"))
+  }
+  list(
+    treatment = as.character(contrast[[2]]),
+    reference = as.character(contrast[[3]])
+  )
+}
+
+comparison_direction_summary <- function(final_bundle, comparison_name) {
+  labels <- comparison_labels(final_bundle, comparison_name)
+  sm <- final_bundle$comparison_summaries[[comparison_name]]
+  c(
+    paste0("- Reference group: ", labels$reference, "."),
+    paste0("- Direction rule: positive log2FC means higher expression in ", labels$treatment, " than in ", labels$reference, "; negative log2FC means lower expression in ", labels$treatment, " than in ", labels$reference, "."),
+    paste0("- Relative to ", labels$reference, ", ", labels$treatment, " has ", sm$up[[1]], " significantly up-regulated genes and ", sm$down[[1]], " significantly down-regulated genes.")
+  )
+}
+
+comparison_interpretation <- function(tbl, comparison_name, focus_markers, treatment_label, reference_label) {
   marker_tbl <- tbl |>
     dplyr::filter((!is.na(.data$gene_name) & .data$gene_name %in% focus_markers) | .data$gene_id %in% focus_markers)
 
@@ -66,18 +87,18 @@ comparison_interpretation <- function(tbl, comparison_name, focus_markers) {
 
   lines <- c()
   if (sum(!is.na(contract_vals)) > 0 && mean(contract_vals, na.rm = TRUE) > 0.3) {
-    lines <- c(lines, paste0(comparison_name, " shows up-regulation of several contractile-program markers, consistent with a shift in cardiomyocyte structural or maturation-related transcription."))
+    lines <- c(lines, paste0("Relative to ", reference_label, ", ", treatment_label, " shows up-regulation of several contractile-program markers, consistent with a shift in cardiomyocyte structural or maturation-related transcription."))
   }
   if (sum(!is.na(calcium_vals)) > 0 && mean(calcium_vals, na.rm = TRUE) > 0.3) {
-    lines <- c(lines, paste0(comparison_name, " increases calcium-handling markers, which is compatible with altered excitation-contraction support or calcium cycling state."))
+    lines <- c(lines, paste0("Relative to ", reference_label, ", ", treatment_label, " increases calcium-handling markers, which is compatible with altered excitation-contraction support or calcium cycling state."))
   }
   if (sum(!is.na(stress_vals)) > 0 && mean(stress_vals, na.rm = TRUE) < -0.3) {
-    lines <- c(lines, paste0(comparison_name, " lowers natriuretic-peptide stress markers, suggesting reduced stress-like or fetal-like signaling relative to rGO."))
+    lines <- c(lines, paste0("Relative to ", reference_label, ", ", treatment_label, " lowers natriuretic-peptide stress markers, suggesting reduced stress-like or fetal-like signaling."))
   } else if (sum(!is.na(stress_vals)) > 0 && mean(stress_vals, na.rm = TRUE) > 0.3) {
-    lines <- c(lines, paste0(comparison_name, " raises natriuretic-peptide stress markers, suggesting stronger stress-response activation relative to rGO."))
+    lines <- c(lines, paste0("Relative to ", reference_label, ", ", treatment_label, " raises natriuretic-peptide stress markers, suggesting stronger stress-response activation."))
   }
   if (length(lines) == 0) {
-    lines <- c(lines, paste0(comparison_name, " shows a broad transcriptional shift, but the configured cardiomyocyte marker panel does not point to a single dominant direction."))
+    lines <- c(lines, paste0("Relative to ", reference_label, ", ", treatment_label, " shows a broad transcriptional shift, but the configured marker panel does not point to a single dominant direction."))
   }
   lines
 }
@@ -172,18 +193,101 @@ build_qc_section <- function(final_bundle) {
   )
 }
 
+read_enrichment_table <- function(path, n = 5) {
+  if (is.null(path) || !nzchar(path) || !file.exists(path)) {
+    return(data.frame())
+  }
+  tbl <- readr::read_csv(path, show_col_types = FALSE)
+  if (!nrow(tbl)) {
+    return(data.frame())
+  }
+  if ("p.adjust" %in% colnames(tbl)) {
+    tbl <- tbl |>
+      dplyr::arrange(.data$`p.adjust`)
+  }
+  tbl <- head(tbl, n)
+  data.frame(
+    Term = tbl$Description %||% tbl$ID,
+    Count = tbl$Count %||% NA,
+    GeneRatio = tbl$GeneRatio %||% NA,
+    padj = if ("p.adjust" %in% colnames(tbl)) vapply(tbl$`p.adjust`, fmt_p, character(1)) else NA_character_,
+    stringsAsFactors = FALSE
+  )
+}
+
+flatten_enrichment_paths <- function(x) {
+  if (is.null(x)) {
+    return(character())
+  }
+  if (is.character(x)) {
+    return(x[nzchar(x)])
+  }
+  if (is.list(x)) {
+    return(unlist(lapply(x, flatten_enrichment_paths), use.names = FALSE))
+  }
+  character()
+}
+
+build_enrichment_detail_lines <- function(enrich_entry, direction_label) {
+  if (is.null(enrich_entry) || length(flatten_enrichment_paths(enrich_entry)) == 0) {
+    return(c(
+      paste0("### ", direction_label, " Gene Enrichment"),
+      "",
+      "- No GO BP or KEGG enrichment result was generated for this direction.",
+      ""
+    ))
+  }
+
+  lines <- c(
+    paste0("### ", direction_label, " Gene Enrichment"),
+    ""
+  )
+
+  go_path <- enrich_entry$go_bp %||% NULL
+  kegg_path <- enrich_entry$kegg %||% NULL
+  go_link <- md_link(basename(go_path %||% ""), go_path) %||% "not available"
+  kegg_link <- md_link(basename(kegg_path %||% ""), kegg_path) %||% "not available"
+
+  lines <- c(
+    lines,
+    paste0("- Full GO BP table: ", go_link),
+    paste0("- Full KEGG table: ", kegg_link),
+    ""
+  )
+
+  go_tbl <- read_enrichment_table(go_path, 5)
+  lines <- c(lines, "#### GO BP", "")
+  if (nrow(go_tbl) == 0) {
+    lines <- c(lines, "_No significant GO BP terms reported._", "")
+  } else {
+    lines <- c(lines, markdown_table(go_tbl), "")
+  }
+
+  kegg_tbl <- read_enrichment_table(kegg_path, 5)
+  lines <- c(lines, "#### KEGG", "")
+  if (nrow(kegg_tbl) == 0) {
+    lines <- c(lines, "_No significant KEGG pathways reported._", "")
+  } else {
+    lines <- c(lines, markdown_table(kegg_tbl), "")
+  }
+
+  lines
+}
+
 build_comparison_section <- function(final_bundle, config, output_dir) {
   lines <- c()
   for (nm in final_bundle$comparisons) {
     tbl <- final_bundle$all_tables[[nm]]
     sm <- final_bundle$comparison_summaries[[nm]]
     paths <- final_bundle$output_paths
+    labels <- comparison_labels(final_bundle, nm)
     lines <- c(
       lines,
       paste0("## Comparison: ", nm),
       "",
       paste0("- Tested genes: ", sm$total_tested[[1]]),
       paste0("- Significant genes: ", sm$significant[[1]], " (up=", sm$up[[1]], ", down=", sm$down[[1]], ")"),
+      comparison_direction_summary(final_bundle, nm),
       paste0("- DE table: ", md_link(paste0(nm, "_DE.csv"), file.path(paths$tables, paste0(nm, "_DE.csv")))),
       paste0("- Summary table: ", md_link(paste0(nm, "_summary.csv"), file.path(paths$comparison, paste0(nm, "_summary.csv")))),
       paste0("- Volcano plot: ", md_link(paste0("volcano_", nm, ".pdf"), file.path(paths$figures, paste0("volcano_", nm, ".pdf")))),
@@ -197,7 +301,7 @@ build_comparison_section <- function(final_bundle, config, output_dir) {
       "### Interpretation",
       ""
     )
-    interp <- comparison_interpretation(tbl, nm, config$study$focus_markers)
+    interp <- comparison_interpretation(tbl, nm, config$study$focus_markers, labels$treatment, labels$reference)
     lines <- c(lines, paste0("- ", interp), "")
 
     lines <- c(lines, "### Biological Summary", "")
@@ -221,6 +325,12 @@ build_comparison_section <- function(final_bundle, config, output_dir) {
       lines <- c(lines, "### Focus Marker Details", "")
       lines <- c(lines, markdown_table(marker_tbl), "")
     }
+
+    lines <- c(
+      lines,
+      build_enrichment_detail_lines(final_bundle$enrichment_files[[nm]]$up, paste0("Upregulated in ", labels$treatment)),
+      build_enrichment_detail_lines(final_bundle$enrichment_files[[nm]]$down, paste0("Downregulated in ", labels$treatment))
+    )
   }
   lines
 }
@@ -237,8 +347,11 @@ render_report <- function(final_bundle, config, output_dir, report_path) {
   )
   comp_lines <- unlist(lapply(names(final_bundle$comparison_summaries), function(nm) {
     sm <- final_bundle$comparison_summaries[[nm]]
-    paste0("- ", nm, ": significant=", sm$significant[[1]], ", up=", sm$up[[1]], ", down=", sm$down[[1]])
+    labels <- comparison_labels(final_bundle, nm)
+    paste0("- ", nm, ": relative to ", labels$reference, ", ", labels$treatment, " has ", sm$up[[1]], " up-regulated genes and ", sm$down[[1]], " down-regulated genes (", sm$significant[[1]], " total significant).")
   }))
+  filter_summary <- final_bundle$filter_summary[1, , drop = FALSE]
+  enrichment_paths <- unique(flatten_enrichment_paths(final_bundle$enrichment_files))
   marker_lines <- if (nrow(final_bundle$focus_marker_table) == 0) {
     "- No configured focus markers were matched in the selected result tables."
   } else {
@@ -256,9 +369,10 @@ render_report <- function(final_bundle, config, output_dir, report_path) {
     "",
     "## Executive Summary",
     "",
-    paste0("- This analysis compared two biomaterial-treated cardiomyocyte groups against the rGO control: ", paste(final_bundle$comparisons, collapse = " and "), "."),
+    paste0("- This analysis evaluated ", length(final_bundle$comparisons), " differential-expression comparison(s): ", paste(final_bundle$comparisons, collapse = ", "), "."),
     paste0("- The selected parameter set was ", final_bundle$variant_id, ", chosen from ", final_bundle$variant_count, " variants."),
     paste0("- Total unique significant genes across the selected variant: ", final_bundle$total_sig, "."),
+    paste0("- Low-expression prefilter: genes with mean normalized count <", fmt_num(filter_summary$min_count_mean[[1]], 2), " were excluded before DESeq2 fitting; ", filter_summary$genes_removed_low_expression[[1]], " of ", filter_summary$total_genes_input[[1]], " genes were removed."),
     paste0("- Heatmap: ", md_link("significant_de_heatmap.pdf", final_bundle$heatmap_file)),
     "",
     "## Study Context",
@@ -292,6 +406,7 @@ render_report <- function(final_bundle, config, output_dir, report_path) {
     "## Quality Control and Sample Structure",
     "",
     build_qc_section(final_bundle),
+    paste0("- Low-expression filtering retained ", filter_summary$genes_retained[[1]], " of ", filter_summary$total_genes_input[[1]], " genes at min_count_mean >= ", fmt_num(filter_summary$min_count_mean[[1]], 2), "."),
     "",
     "## Differential Expression Overview",
     "",
@@ -326,10 +441,13 @@ render_report <- function(final_bundle, config, output_dir, report_path) {
     "",
     if (!isTRUE(config$enrichment$enabled)) {
       "- Enrichment disabled in config."
-    } else if (length(final_bundle$enrichment_files) == 0 || all(vapply(final_bundle$enrichment_files, is.null, logical(1)))) {
+    } else if (length(enrichment_paths) == 0) {
       "- No enrichment output generated. The current environment is missing clusterProfiler or organism annotation packages."
     } else {
-      paste("- Files:", paste(unname(unlist(final_bundle$enrichment_files)), collapse = ", "))
+      c(
+        paste0("- Direction-specific enrichment was generated for up-regulated and down-regulated genes separately, using the selected comparison-specific DEG sets."),
+        paste("- Files:", paste(enrichment_paths, collapse = ", "))
+      )
     },
     "",
     "## Stability Assessment",
@@ -355,7 +473,7 @@ render_report <- function(final_bundle, config, output_dir, report_path) {
     "",
     focus_marker_narrative(final_bundle$focus_marker_table, config$study),
     "- The report should prioritize genes and themes that recur across parameter variants, because those are less likely to be threshold-specific artifacts.",
-    "- If enrichment dependencies are installed, the next step should be GO/KEGG interpretation of the up- and down-regulated gene sets for each comparison.",
+    "- The most direct biological readout now comes from the direction-specific enrichment sections above: interpret up-regulated pathways as processes activated in the treatment group relative to the reference group, and down-regulated pathways as processes reduced in the treatment group.",
     "- For this cardiomyocyte material-response study, the most informative follow-up is to connect contractile, calcium-handling, and stress-marker changes with functional assays such as beating behavior, calcium transients, or maturation phenotypes.",
     "",
     "## Output Directory",

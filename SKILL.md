@@ -36,7 +36,7 @@ This skill is intended to behave like a professional bioinformatics analysis ser
 7. If the effective group count is greater than 3, or the config explicitly enables trend analysis, run the TCseq module.
 8. Run clusterProfiler enrichment on selected DEG sets and on TCseq clusters when available.
 9. If multiple threshold or clustering parameter sets are configured, compare stability and select the final result bundle.
-10. Generate a markdown report and a machine-readable output manifest.
+10. Generate a markdown report and a machine-readable output manifest. The report must state the low-expression filtering rule, describe up/down regulation relative to the configured reference group, and summarize GO/KEGG enrichment separately for up-regulated and down-regulated genes.
 
 ## Key Files
 
@@ -91,6 +91,7 @@ Rscript scripts/legacy_deseq2_cli.R --count_dir=counts --sample_table=samples.cs
 - Do not run time-course clustering for 2-group comparisons unless the user explicitly requests trend analysis.
 - Treat enrichment as question-dependent interpretation, not an automatic substitute for effect-size review.
 - When multiple parameter variants are run, report both the chosen final result and the competing variants.
+- Keep `min_count_mean` above `0`; use `10` as the standard default unless the user explicitly requests a different positive value.
 - Only accept `log2FC` thresholds from `{1, 1.5, 2}`.
 - Only accept `padj` thresholds from `{0.05, 0.01}`.
 - Reject ad hoc “soft” thresholds even if the user asks for them, unless the user explicitly wants a non-standard exploratory run and the report labels it as such.

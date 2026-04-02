@@ -29,8 +29,8 @@
   },
   "thresholds": {
     "padj": [0.01, 0.05],
-    "log2fc": [0.58, 1.0],
-    "min_count_mean": [5, 10],
+    "log2fc": [1.0, 1.5],
+    "min_count_mean": [10, 20],
     "independent_filtering": [true, false],
     "cooks_cutoff": ["default", "off"]
   },

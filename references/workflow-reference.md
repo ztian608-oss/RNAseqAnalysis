@@ -28,15 +28,20 @@ Core:
 - `vsd.csv`
 - `PCA_DESeq2.pdf`
 - `PCA_DESeq2_data.csv`
-- `de_result_list.rds`
-- `significant_de_genes.txt`
+- `manifest.json`
+- `RNAseqAnalysis_report.md`
+- `variant_summary.csv`
 
 Per-comparison:
 - `*_DE.csv`
 - `*_summary.csv`
+- `*_up_go_bp.csv`
+- `*_up_kegg.csv`
+- `*_down_go_bp.csv`
+- `*_down_kegg.csv`
 
 Optional:
-- `volcanoplot_*.pdf`
+- `volcano_*.pdf`
 - `significant_de_heatmap.pdf`
 - `timecourse_cluster_heatmap.pdf`
 - `timecourse_cluster_result.csv`

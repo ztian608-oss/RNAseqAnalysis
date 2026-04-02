@@ -89,6 +89,9 @@ normalize_config <- function(config, config_path = NULL) {
 normalize_parameter_policy <- function(config) {
   config$thresholds$padj <- unique(as.numeric(unlist(config$thresholds$padj %||% c(0.05))))
   config$thresholds$log2fc <- unique(as.numeric(unlist(config$thresholds$log2fc %||% c(1))))
+  config$thresholds$min_count_mean <- unique(as.numeric(unlist(config$thresholds$min_count_mean %||% c(10))))
+  config$thresholds$independent_filtering <- unique(as.logical(unlist(config$thresholds$independent_filtering %||% c(TRUE))))
+  config$thresholds$cooks_cutoff <- unique(as.character(unlist(config$thresholds$cooks_cutoff %||% c("default"))))
   config$trend$cluster_num <- unique(as.integer(unlist(config$trend$cluster_num %||% c(4L, 6L))))
   validate_parameter_policy(config)
 }
@@ -114,6 +117,12 @@ validate_parameter_policy <- function(config) {
   if (length(bad_clusters) > 0) {
     stop("Invalid TCseq cluster numbers: ", paste(bad_clusters, collapse = ", "),
          ". Allowed values are 4, 6, and 8.")
+  }
+
+  bad_min_count <- config$thresholds$min_count_mean[!is.finite(config$thresholds$min_count_mean) | config$thresholds$min_count_mean <= 0]
+  if (length(bad_min_count) > 0) {
+    stop("Invalid min_count_mean thresholds: ", paste(bad_min_count, collapse = ", "),
+         ". Values must be > 0, and 10 is the recommended default.")
   }
 
   config

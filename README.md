@@ -2,6 +2,8 @@
 
 Question-driven RNA-seq differential expression analysis skill built around DESeq2, optional TCseq trend clustering, clusterProfiler enrichment, parameter-variant comparison, pre-run plan display, and markdown report generation.
 
+The current workflow applies a low-expression prefilter before DESeq2 fitting, interprets differential expression relative to the configured reference group, and reports direction-specific GO/KEGG enrichment for up-regulated and down-regulated genes separately.
+
 ## Current Design
 
 - `scripts/run_rnaseq_analysis.R` is the main config-driven entrypoint.
@@ -49,33 +51,39 @@ The normalized config contains these sections:
 
 See:
 
-- [references/skill_input.schema.json](/Users/xiaoclaw/DEanalysis/references/skill_input.schema.json)
-- [references/skill_output.schema.json](/Users/xiaoclaw/DEanalysis/references/skill_output.schema.json)
-- [references/intake_questionnaire.md](/Users/xiaoclaw/DEanalysis/references/intake_questionnaire.md)
-- [references/report_template.md](/Users/xiaoclaw/DEanalysis/references/report_template.md)
+- [references/skill_input.schema.json](/Users/xiaoclaw/RNAseqAnalysis/references/skill_input.schema.json)
+- [references/skill_output.schema.json](/Users/xiaoclaw/RNAseqAnalysis/references/skill_output.schema.json)
+- [references/intake_questionnaire.md](/Users/xiaoclaw/RNAseqAnalysis/references/intake_questionnaire.md)
+- [references/report_template.md](/Users/xiaoclaw/RNAseqAnalysis/references/report_template.md)
 
 ## Output Layout
 
 Each run writes:
 
-- `resolved_config.json`
-- `variant_summary.csv`
+- `config/resolved_config.json`
+- `comparison/variant_summary.csv`
 - `manifest.json`
-- `RNAseqAnalysis_report.md`
-- one subdirectory per parameter variant
+- `report/RNAseqAnalysis_report.md`
+- variant-scoped outputs under `deseq2/`, `figures/`, `tables/`, `comparison/`, `enrichment/`, and `tcseq/`
 
-Each variant directory contains:
+For the selected variant, the report links to files such as:
 
-- `vsd.csv`
-- `PCA_DESeq2.pdf`
-- `PCA_DESeq2_data.csv`
+- `deseq2/<variant>/vsd.csv`
+- `figures/<variant>/PCA_DESeq2.pdf`
+- `tables/<variant>/PCA_DESeq2_data.csv`
+- `tables/<variant>/*_DE.csv`
+- `comparison/<variant>/*_summary.csv`
+- `enrichment/<variant>/<comparison>_up_go_bp.csv`
+- `enrichment/<variant>/<comparison>_up_kegg.csv`
+- `enrichment/<variant>/<comparison>_down_go_bp.csv`
+- `enrichment/<variant>/<comparison>_down_kegg.csv`
 - `*_DE.csv`
 - `*_summary.csv`
-- optional `enrichment/`
-- optional `tcseq/`
+- optional `tcseq/<variant>/`
 
 ## Notes
 
 - The current implementation prioritizes modular interfaces and extensibility.
 - Enrichment uses GO BP and KEGG by default when the required annotation packages are available.
+- `min_count_mean` defaults to `10` and must be greater than `0`.
 - TCseq is triggered automatically when group count exceeds the configured threshold or the study config explicitly requests trend analysis.

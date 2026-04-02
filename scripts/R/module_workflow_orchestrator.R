@@ -77,12 +77,13 @@ run_rnaseq_analysis_workflow <- function(config) {
             "cluster_num=", variant$cluster_num)
     )
 
-    dds <- build_dds_from_matrix(
+    dds_bundle <- build_dds_from_matrix(
       input$count_mat,
       input$metadata,
       config$design$formula,
       variant$min_count_mean
     )
+    dds <- dds_bundle$dds
     dds <- run_deseq_fit(dds, config)
     vsd <- DESeq2::vst(dds, blind = FALSE)
     vsd_tbl <- as.data.frame(SummarizedExperiment::assay(vsd)) |>
@@ -113,12 +114,23 @@ run_rnaseq_analysis_workflow <- function(config) {
       all_tables[[nm]] <- tbl
       significant_gene_sets[[nm]] <- unique(deg$significant$gene_id)
       all_sig <- unique(c(all_sig, deg$significant$gene_id))
-      enrich_files[[nm]] <- run_ora_for_gene_set(
-        deg$significant$gene_id,
-        config,
-        resolve_universe(config, input$background_genes, input$gene_info, tbl),
-        nm,
-        paths$enrichment
+      up_genes <- unique(deg$significant$gene_id[deg$significant$log2FoldChange > 0])
+      down_genes <- unique(deg$significant$gene_id[deg$significant$log2FoldChange < 0])
+      enrich_files[[nm]] <- list(
+        up = run_ora_for_gene_set(
+          up_genes,
+          config,
+          resolve_universe(config, input$background_genes, input$gene_info, tbl),
+          paste0(nm, "_up"),
+          paths$enrichment
+        ),
+        down = run_ora_for_gene_set(
+          down_genes,
+          config,
+          resolve_universe(config, input$background_genes, input$gene_info, tbl),
+          paste0(nm, "_down"),
+          paths$enrichment
+        )
       )
     }
 
@@ -142,9 +154,11 @@ run_rnaseq_analysis_workflow <- function(config) {
     variant_results[[i]] <- list(
       variant_id = variant$variant_id,
       variant_params = variant,
+      filter_summary = dds_bundle$filter_summary,
       total_sig = length(all_sig),
       top_genes = head(unique(unlist(lapply(all_tables, top_feature_labels, n = 10))), 20),
       comparisons = names(comparisons),
+      contrast_defs = comparisons,
       all_tables = all_tables,
       significant_gene_sets = significant_gene_sets,
       comparison_summaries = comp_summaries,

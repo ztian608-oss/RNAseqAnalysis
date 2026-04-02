@@ -1,4 +1,8 @@
 build_dds_from_matrix <- function(count_mat, metadata, design_formula, min_count_mean) {
+  if (!is.finite(min_count_mean) || min_count_mean <= 0) {
+    stop("min_count_mean must be > 0")
+  }
+  total_genes_input <- nrow(count_mat)
   dds <- DESeq2::DESeqDataSetFromMatrix(
     countData = round(count_mat),
     colData = S4Vectors::DataFrame(metadata),
@@ -8,7 +12,15 @@ build_dds_from_matrix <- function(count_mat, metadata, design_formula, min_count
   if (nrow(dds) == 0) {
     stop("No genes remain after min_count_mean filtering")
   }
-  dds
+  list(
+    dds = dds,
+    filter_summary = data.frame(
+      total_genes_input = total_genes_input,
+      genes_retained = nrow(dds),
+      genes_removed_low_expression = total_genes_input - nrow(dds),
+      min_count_mean = min_count_mean
+    )
+  )
 }
 
 run_deseq_fit <- function(dds, config) {

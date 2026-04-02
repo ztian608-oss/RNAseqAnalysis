@@ -17,13 +17,13 @@
 ## Quality and Overview
 
 - PCA summary
-- Filtering summary
+- Low-expression filtering summary, including the `min_count_mean` threshold and number of genes removed
 - Notes on replication and model assumptions
 
 ## Differential Expression
 
 - Variant selected
-- DEG counts per comparison
+- DEG counts per comparison, described relative to the reference group
 - Key genes
 - Effect-size and significance interpretation
 
@@ -36,7 +36,8 @@
 
 ## Functional Enrichment
 
-- DEG enrichment summary
+- Up-regulated gene enrichment summary by comparison
+- Down-regulated gene enrichment summary by comparison
 - Cluster enrichment summary
 - Focus-pathway interpretation
 
