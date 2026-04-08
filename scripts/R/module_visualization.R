@@ -221,14 +221,21 @@ run_sig_heatmap <- function(vsd_mat, sig_genes, metadata, sample_column, group_c
   sig_mat <- vsd_mat[intersect(sig_genes, rownames(vsd_mat)), , drop = FALSE]
   if (nrow(sig_mat) < 2) return(NULL)
   if (!requireNamespace("pheatmap", quietly = TRUE)) return(NULL)
+  
   ann_col <- metadata[, c(sample_column, group_column), drop = FALSE]
   rownames(ann_col) <- ann_col[[sample_column]]
   ann_col[[sample_column]] <- NULL
   out_file <- file.path(outdir, "significant_de_heatmap.pdf")
+  
+  # 1. 定义你想要的自定义颜色梯度（蓝 -> 白 -> 红）
+  # 生成 100 个颜色阶层，使渐变更加平滑
+  custom_colors <- grDevices::colorRampPalette(c("#8DB5CE", "white", "#C72228"))(100)
+  
   pheatmap::pheatmap(
     scale_rows(sig_mat),
     show_rownames = FALSE,
     annotation_col = ann_col,
+    color = custom_colors,       # 2. 将颜色赋给 pheatmap 的 color 参数
     filename = out_file,
     width = 7,
     height = 8
