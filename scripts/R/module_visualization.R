@@ -278,8 +278,7 @@ plot_enrichment_bubble <- function(file, output_pdf, title = "GO Enrichment", to
       p_numeric = as.numeric(.data[[p_col]]),
       log_p = -log10(dplyr::if_else(is.na(p_numeric) | p_numeric <= 0, 1e-300, p_numeric)),
       FoldEnrichment = as.numeric(FoldEnrichment),
-      Count = as.numeric(Count),
-      Description = stringr::str_wrap(Description, width = wrap_width)
+      Count = as.numeric(Count)
     ) |>
     dplyr::filter(is.finite(log_p), is.finite(FoldEnrichment), is.finite(Count)) |>
     dplyr::arrange(dplyr::desc(log_p)) |>
