@@ -243,7 +243,7 @@ run_sig_heatmap <- function(vsd_mat, sig_genes, metadata, sample_column, group_c
   out_file
 }
 
-plot_enrichment_bubble <- function(file, output_pdf, title = "GO Enrichment", top_n = 30, wrap_width = 45) {
+plot_enrichment_bubble <- function(file, output_pdf, title = "Enrichment", top_n = 30, wrap_width = 45) {
   if (!file.exists(file)) return(NULL)
   df <- read.csv(file, stringsAsFactors = FALSE)
   if (nrow(df) == 0) return(NULL)
