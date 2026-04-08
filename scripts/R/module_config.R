@@ -129,6 +129,20 @@ validate_parameter_policy <- function(config) {
 }
 
 expand_variants <- function(config) {
+  
+  # Only expand cluster_num when trend analysis is actually needed
+  # trend$enabled can be: TRUE, FALSE, or "auto"
+  group_count <- config$meta$group_count %||% 3
+  need_trend <- isTRUE(config$trend$enabled) || 
+                (identical(config$trend$enabled, "auto") && group_count > config$trend$trigger_group_count_gt)
+  
+  if (need_trend && length(config$trend$cluster_num) > 1) {
+    cluster_values <- config$trend$cluster_num
+  } else {
+    # Use only the first cluster_num value to avoid unnecessary variant expansion
+    cluster_values <- config$trend$cluster_num[1]
+  }
+  
   grid <- expand.grid(
     padj = config$thresholds$padj,
     log2fc = config$thresholds$log2fc,
@@ -136,7 +150,7 @@ expand_variants <- function(config) {
     independent_filtering = config$thresholds$independent_filtering,
     cooks_cutoff = config$thresholds$cooks_cutoff,
     shrinkage_type = if (isTRUE(config$shrinkage$enabled)) config$shrinkage$type else "none",
-    cluster_num = config$trend$cluster_num,
+    cluster_num = cluster_values,
     stringsAsFactors = FALSE
   )
 
