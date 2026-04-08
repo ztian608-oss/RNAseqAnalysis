@@ -102,6 +102,7 @@ run_rnaseq_analysis_workflow <- function(config) {
     all_tables <- list()
     significant_gene_sets <- list()
     enrich_files <- list()
+    enrichment_plot_files <- list()
     for (nm in names(comparisons)) {
       tbl <- extract_result_for_contrast(dds, comparisons[[nm]], input$gene_info, variant)
       tbl <- apply_shrinkage(dds, tbl, nm, variant)
@@ -131,6 +132,11 @@ run_rnaseq_analysis_workflow <- function(config) {
           paste0(nm, "_down"),
           paths$enrichment
         )
+      )
+      enrichment_plot_files[[nm]] <- run_enrichment_bubble_plots(
+        enrich_files[[nm]],
+        comparison_name = comparison_label_from_name(nm, comparisons[[nm]]),
+        outdir = paths$figures
       )
     }
 
@@ -170,7 +176,8 @@ run_rnaseq_analysis_workflow <- function(config) {
       heatmap_file = heatmap_file,
       tcseq_dir = if (is.null(tcseq_res)) NULL else tcseq_res$out_dir,
       tcseq_status = if (is.null(tcseq_res)) "" else tcseq_res$status %||% "",
-      enrichment_files = enrich_files
+      enrichment_files = enrich_files,
+      enrichment_plot_files = enrichment_plot_files
     )
   }
 
